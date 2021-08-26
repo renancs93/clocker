@@ -10,8 +10,7 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
-  InputGroup,
-  InputLeftAddon,
+  Link,
 } from '@chakra-ui/react';
 
 import { Logo } from './../components';
@@ -23,23 +22,34 @@ const validationSchema = yup.object().shape({
     .email('E-mail inválido')
     .required('Preenchimento obrigatório'),
   password: yup.string().required('Preenchimento obrigatório'),
-  username: yup.string().required('Preenchimento obrigatório'),
 });
 
 export default function Home() {
-  const { values, errors, touched, handleBlur, handleChange, handleSubmit, isSubmitting } =
-    useFormik({
-      onSubmit: (values, form) => {
-        console.log(values);
-      },
-      validationSchema,
-      initialValues: {
-        email: '',
-        username: '',
-        password: '',
-      },
-    });
-
+  const {
+    values,
+    errors,
+    touched,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+  } = useFormik({
+    onSubmit: async (values, form) => {
+      try {
+        const user = await firebase
+          .auth()
+          .signInWithEmailAndPassword(values.email, values.password);
+        console.log(user);
+      } catch (error) {
+        console.log('ERROR: ', error);
+      }
+    },
+    validationSchema,
+    initialValues: {
+      email: '',
+      password: '',
+    },
+  });
 
   return (
     <Container p={4} centerContent>
@@ -78,30 +88,20 @@ export default function Home() {
           )}
         </FormControl>
 
-        <FormControl id='username' p={4} isRequired>
-          <InputGroup size='lg'>
-            <InputLeftAddon children='clocker.work/' />
-            <Input
-              size='lg'
-              type='username'
-              value={values.username}
-              onChange={handleChange}
-              onBlur={handleBlur}
-            />
-          </InputGroup>
-          {touched.username && (
-            <FormHelperText textColor='#e74c3c'>
-              {errors.username}
-            </FormHelperText>
-          )}
-        </FormControl>
-
         <Box p={4}>
-          <Button width='100%' colorScheme="blue" onClick={handleSubmit} isLoading ={isSubmitting} >
+          <Button
+            width='100%'
+            colorScheme='blue'
+            onClick={handleSubmit}
+            isLoading={isSubmitting}
+          >
             Entrar
           </Button>
         </Box>
       </Box>
+
+      <Link href='/signup'>Ainda não tem uma conta? Cadastre-se</Link>
+      
     </Container>
   );
 }
