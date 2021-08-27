@@ -1,6 +1,5 @@
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useEffect } from 'react';
 
 import {
   Container,
@@ -15,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 
 import { Logo } from '../Logo';
-import firebase, { persistenceMode } from '../../config/firebase';
+import { firebaseClient, persistenceMode } from '../../config/firebase/client';
 
 const validationSchema = yup.object().shape({
   email: yup
@@ -24,6 +23,12 @@ const validationSchema = yup.object().shape({
     .required('Preenchimento obrigatório'),
   password: yup.string().required('Preenchimento obrigatório'),
 });
+
+const handleSubmitKeyPress = (event)=>{
+  if(event.keyCode === 13){
+    document.getElementById("btnEntrar").click();
+  }
+}
 
 export const Login = () => {
   const {
@@ -38,14 +43,12 @@ export const Login = () => {
     onSubmit: async (values, form) => {
       
       // Persist Authentication
-      firebase.auth().setPersistence(persistenceMode);
+      firebaseClient.auth().setPersistence(persistenceMode);
       
       try {
-        const user = await firebase
+        const user = await firebaseClient
           .auth()
           .signInWithEmailAndPassword(values.email, values.password);
-        // console.log(user);
-        // console.log(firebase.auth().currentUser);
       } catch (error) {
         console.log('ERROR: ', error);
       }
@@ -72,6 +75,7 @@ export const Login = () => {
             value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
+            onKeyUp={handleSubmitKeyPress}
           />
           {touched.email && (
             <FormHelperText textColor='#e74c3c'>{errors.email}</FormHelperText>
@@ -86,6 +90,7 @@ export const Login = () => {
             value={values.password}
             onChange={handleChange}
             onBlur={handleBlur}
+            onKeyUp={handleSubmitKeyPress}
           />
           {touched.password && (
             <FormHelperText textColor='#e74c3c'>
@@ -96,6 +101,7 @@ export const Login = () => {
 
         <Box p={4}>
           <Button
+            id="btnEntrar"
             width='100%'
             colorScheme='blue'
             onClick={handleSubmit}

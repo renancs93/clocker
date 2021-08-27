@@ -1,4 +1,4 @@
-import firebase from 'firebase/app';
+import firebaseClient from 'firebase/app';
 import 'firebase/auth';
 
 // Your web app's Firebase configuration
@@ -14,11 +14,11 @@ const firebaseConfig = {
 };
 
 // Initialize
-const app = firebase.apps.length
-  ? firebase.app()
-  : firebase.initializeApp(firebaseConfig);
+const app = firebaseClient.apps.length
+  ? firebaseClient.app()
+  : firebaseClient.initializeApp(firebaseConfig);
 
 // Persist Authentication
-export const persistenceMode = firebase.auth.Auth.Persistence.LOCAL;
+export const persistenceMode = firebaseClient.auth.Auth.Persistence.LOCAL;
 
-export default app;
+export { firebaseClient }
