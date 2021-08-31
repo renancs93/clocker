@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
@@ -10,11 +13,10 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
-  Link,
+  // Link,
 } from '@chakra-ui/react';
 
-import { Logo } from '../Logo';
-import { firebaseClient, persistenceMode } from '../../config/firebase/client';
+import { Logo, useAuth } from '../components';
 
 const validationSchema = yup.object().shape({
   email: yup
@@ -30,7 +32,10 @@ const handleSubmitKeyPress = (event)=>{
   }
 }
 
-export const Login = () => {
+export default function Login(){
+  const [auth, { login }] = useAuth();
+  const router = useRouter();
+
   const {
     values,
     errors,
@@ -40,25 +45,17 @@ export const Login = () => {
     handleSubmit,
     isSubmitting,
   } = useFormik({
-    onSubmit: async (values, form) => {
-      
-      // Persist Authentication
-      firebaseClient.auth().setPersistence(persistenceMode);
-      
-      try {
-        const user = await firebaseClient
-          .auth()
-          .signInWithEmailAndPassword(values.email, values.password);
-      } catch (error) {
-        console.log('ERROR: ', error);
-      }
-    },
+    onSubmit: login,
     validationSchema,
     initialValues: {
       email: '',
       password: '',
     },
   });
+
+  useEffect(() => {
+    auth.user && router.push('/agenda');
+  }, [auth.user]);
 
   return (
     <Container p={4} centerContent>
