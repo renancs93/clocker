@@ -2208,10 +2208,10 @@
   resolved "https://registry.yarnpkg.com/@refetty/observable/-/observable-1.0.0-rc.10.tgz#11b361678ca317fc0e227da56a64a6ada9afc90f"
   integrity sha512-fw9mqNYqJ3r/XQMWRQyPRQnZ/vGYLqxDV+2/VTHUACxIkScD9TOwJ0wL9VR63fCh7znLZizwNApUNzQdRtONVA==
 
-"@refetty/react@^1.0.0-rc.12":
-  version "1.0.0-rc.12"
-  resolved "https://registry.yarnpkg.com/@refetty/react/-/react-1.0.0-rc.12.tgz#b9b5f2461f319f4dc540b00f25cc00c6996ecdbf"
-  integrity sha512-KLfm6weZSao4KSq/ZbeYWlr+Lf0gpDWMPo0gPuNt0HZeSWJUCtbzrizSK9fl91cBLWel2MGUQWlaVIOt77CFsQ==
+"@refetty/react@1.0.0-rc.11":
+  version "1.0.0-rc.11"
+  resolved "https://registry.yarnpkg.com/@refetty/react/-/react-1.0.0-rc.11.tgz#b7ba42e8a66aaa7f99b9a241df1a440c1abeeb02"
+  integrity sha512-GC8y3EPx+cLCN0aiA6JJVMMZyGjDjoIhDVeCiLy4pUhTojFjrBwWYCeeQFiXMNmpPCrc+NWx4pLQzBV6ewi3hQ==
   dependencies:
     "@refetty/async" "^1.0.0-rc.11"
 

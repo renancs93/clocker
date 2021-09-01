@@ -6,25 +6,19 @@ import axios from 'axios'
 import { subDays, addDays } from 'date-fns';
 
 import { ChevronLeftIcon, ChevronRightIcon} from '@chakra-ui/icons'
-import { Button, Container, Box, IconButton } from '@chakra-ui/react';
+import { Button, Container, Box, IconButton, SimpleGrid, Spinner } from '@chakra-ui/react';
 
-import { getToken } from '../config/firebase/client';
 import { useAuth, Logo, formatDate } from './../components';
 
-const getAgenda = async (when) =>{
-  const token = await getToken();
-
-  return axios({
-    method: 'get',
-    url: '/api/agenda',
+const getSchedule = async (when) =>
+  axios({
+    method: 'GET',
+    url: '/api/schedule',
     params: {
-      when: { when },
-    },
-    headers: {
-      Authorization: `Bearer ${token}`,
+      when: { when, username: window.location.pathname },
     },
   });
-}
+
 
 const Header = ({ children }) => {
   return(
@@ -34,23 +28,27 @@ const Header = ({ children }) => {
   )
 };
 
-export default function Agenda(){
+const TimeBlock = ({time}) => {
+  return (
+    <Button padding={8} bg="blue.500" color="white" >
+      {time}
+    </Button>
+  );
+}
+
+export default function Schedule(){
   const router = useRouter();
   const [auth, { logout }] = useAuth();
 
   const [when, setWhen] = useState(()=> new Date());
-  const [data, { loading, status, error }, fetch] = useFetch(getAgenda, {lazy: true});
+  const [data, { loading, status, error }, fetch] = useFetch(getSchedule, {lazy: true});
 
   // passa o estado anterior evitando o problema de concorrência
   const addDay = () => setWhen(prevState => addDays(prevState, 1))
   const subDay = () => setWhen(prevState => subDays(prevState, 1))
 
-  useEffect(() => {
-    !auth.user && router.push('/');
-  }, [auth.user]);
-
   useEffect(()=>{
-    fetch(getAgenda);
+    fetch(getSchedule);
   },[when]);
 
   return (
@@ -64,6 +62,11 @@ export default function Agenda(){
         <Box flex={1} textAlign='center'>{formatDate(when, 'PPPP')}</Box>
         <IconButton icon={<ChevronRightIcon />} bg='transparent' onClick={addDay} />
       </Box>
+      <SimpleGrid p={4} columns={2} spacing={4}>
+        { loading && <Spinner thickness="4px" speed="0.65s" emptyColor="gray.00" color="blue.500" size="xl" /> }
+        { data?.map(time => <TimeBlock key={time} time={time} />) }
+      </SimpleGrid>
+
     </Container>
   );
 };
