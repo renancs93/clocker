@@ -5,10 +5,16 @@ import { useFetch } from '@refetty/react';
 import axios from 'axios'
 import { subDays, addDays } from 'date-fns';
 
+import { useAuth, Logo, formatDate, TimeBlock } from './../components';
 import { ChevronLeftIcon, ChevronRightIcon} from '@chakra-ui/icons'
-import { Button, Container, Box, IconButton, SimpleGrid, Spinner } from '@chakra-ui/react';
-
-import { useAuth, Logo, formatDate } from './../components';
+import {
+  Button,
+  Container,
+  Box,
+  IconButton,
+  SimpleGrid,
+  Spinner,
+} from '@chakra-ui/react';
 
 const getSchedule = async (when) =>
   axios({
@@ -19,7 +25,6 @@ const getSchedule = async (when) =>
     },
   });
 
-
 const Header = ({ children }) => {
   return(
     <Box padding={4} display='flex' justifyContent='space-between' alignItems='center' >
@@ -27,14 +32,6 @@ const Header = ({ children }) => {
     </Box>
   )
 };
-
-const TimeBlock = ({time}) => {
-  return (
-    <Button padding={8} bg="blue.500" color="white" >
-      {time}
-    </Button>
-  );
-}
 
 export default function Schedule(){
   const router = useRouter();
