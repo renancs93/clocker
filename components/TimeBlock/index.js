@@ -15,18 +15,20 @@ import {
 } from '@chakra-ui/react';
 
 import { Input } from '../Input';
+import { format } from 'date-fns';
 
-const setSchedule = async (data) =>
+const setSchedule = async ({date, ...data}) =>
   axios({
     method: 'POST',
     url: '/api/schedule',
     data: {
       ...data,
+      date: format(date, 'yyyy-MM-dd'),
       username: window.location.pathname.replace('/', ''),
     },
   });
 
-const ModalTimeBlock = ({isOpen, onClose, onComplete, children}) => (
+const ModalTimeBlock = ({isOpen, onClose, onComplete, isSubmitting, children}) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
     <ModalContent>
@@ -37,8 +39,8 @@ const ModalTimeBlock = ({isOpen, onClose, onComplete, children}) => (
       </ModalBody>
 
       <ModalFooter>
-        <Button variant="ghost" marginRight={1} onClick={onClose}>Cancelar</Button>
-        <Button colorScheme="blue" mr={3} onClick={onComplete}>
+        {!isSubmitting && <Button variant="ghost" marginRight={1} onClick={onClose}>Cancelar</Button>}
+        <Button colorScheme="blue" mr={3} onClick={onComplete} isLoading={isSubmitting}>
           Reservar Horário
         </Button>
       </ModalFooter>
@@ -46,20 +48,36 @@ const ModalTimeBlock = ({isOpen, onClose, onComplete, children}) => (
   </Modal>
 )
   
-export const TimeBlock = ({ time }) => {
+export const TimeBlock = ({ time, date }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen((prevState) => !prevState);
 
-  const {values, handleSubmit, handleChange, handleBlur, errors, touched} = useFormik({
-    onSubmit: (values) => setSchedule({...values, when: time}),
+  const {
+    values,
+    handleSubmit,
+    handleChange,
+    handleBlur,
+    errors,
+    touched,
+    isSubmitting,
+  } = useFormik({
+    onSubmit: async (values) => {
+      try{
+        await setSchedule({ ...values, time, date});
+        toggle();
+      }
+      catch(error){
+        console.log(error);
+      }
+    },
     initialValues: {
       name: '',
       phone: '',
     },
     validationSchema: yup.object().shape({
       name: yup.string().required('Preenchimento obrigatório'),
-      phone: yup.string().required('Preenchimento obrigatório')
-    })
+      phone: yup.string().required('Preenchimento obrigatório'),
+    }),
   });
 
   return (
@@ -70,10 +88,11 @@ export const TimeBlock = ({ time }) => {
         isOpen={isOpen}
         onClose={toggle}
         onComplete={handleSubmit}
+        isSubmitting={isSubmitting}
       >
         <>
           <Input
-            label="Nome:"
+            label='Nome:'
             name='name'
             touched={touched.name}
             errors={errors.name}
@@ -82,9 +101,10 @@ export const TimeBlock = ({ time }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             size='lg'
+            disable={isSubmitting}
           />
           <Input
-            label="Telefone:"
+            label='Telefone:'
             name='phone'
             touched={touched.name}
             errors={errors.name}
@@ -93,6 +113,7 @@ export const TimeBlock = ({ time }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             size='lg'
+            disable={isSubmitting}
           />
         </>
       </ModalTimeBlock>
