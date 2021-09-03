@@ -8,6 +8,8 @@ const profile = db.collection('profiles');
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req, res) => {
   
+  // TODO - VALIDAR SE O USUÁRIO INFORMADO JÁ EXISTE
+
   const [,token] = req.headers.authorization.split(' ');
   const { user_id } = await firebaseServer.auth().verifyIdToken(token);
 
@@ -15,8 +17,6 @@ export default async (req, res) => {
     userId: user_id,
     username: req.body.username
   })
-
-  console.log(user);
 
   res.status(200).json({ name: 'John Doe' })
 }
