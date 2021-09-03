@@ -1,7 +1,10 @@
 import { firebaseServer } from './../../config/firebase/server';
 import { differenceInHours, format, addHours } from 'date-fns'
 
+// Firestore
 const db = firebaseServer.firestore();
+//db.settings({ignoreUndefinedProperties: true});
+
 const profile = db.collection('profiles');
 const agenda = db.collection('agenda');
 
@@ -20,46 +23,64 @@ for(let blockIndex = 0; blockIndex <= totalHours; blockIndex++){
 
 // Recupera o valor de profiles do usuário
 const getUserId = async (username) => {
-  const profileDoc = await profile
-    .where('username', '==', username)
-    .get();
+  try {
+    //console.log(">>>>>>>>> getUserId: ", username); // remover
+    if(!username){
+      return false;
+    }
 
-  if(!profileDoc.docs.length){
+    const profileDoc = await profile.where('username', '==', username).get();
+
+    if (!profileDoc.docs.length) {
+      return false;
+    }
+
+    const { userId } = profileDoc.docs[0].data();
+    return userId;
+  } 
+  catch (error) {
+    console.log('>>>> getUserId ERROR', error);
     return false;
   }
-
-  const { userId } = profileDoc.docs[0].data();
-  return userId;
 }
 
+// POST
 const setSchedule = async (req, res) =>{
-  const userId = await getUserId(req.body.username);
-  const docId = `${userId}#${req.body.date}#${req.body.time}`
-  
-  const doc = await agenda.doc(docId).get()
-
-  if(doc.exists){
-    res.status(400).json({ message: 'Horário bloqueado!' });
-    return;
-  }
-
-  const block = await agenda.doc(docId).set({
-    userId,
-    date: req.body.date,
-    time: req.body.time,
-    name: req.body.name,
-    phone: req.body.phone,
-  })
+  try{
+    const userId = await getUserId(req.body.username);
+    const docId = `${userId}#${req.body.date}#${req.body.time}`
     
-  return res.status(200).json(block);
+    const doc = await agenda.doc(docId).get()
+  
+    if(doc.exists){
+      res.status(400).json({ message: 'Horário bloqueado!' });
+      return;
+    }
+  
+    const block = await agenda.doc(docId).set({
+      userId,
+      date: req.body.date,
+      time: req.body.time,
+      name: req.body.name,
+      phone: req.body.phone,
+    })
+
+    return res.status(200).json(block);
+  } catch (error) {
+    console.log('>>>> setSchedule ERROR', error);
+    return res.status(401);
+  }
 }
 
+// GET
 const getSchedule = async (req, res) =>{
   try {
     const userId = await getUserId(req.query.username);
 
+    // TODO - VERIFICAR CHAMADAS DUPLICADAS DE getUserId - ESTÁ PASSANDO UNDEFINED
     if (!userId){
-      return res.status(404).json({message: 'Invalid username'})
+      return;
+      //return res.status(404).json({message: 'Invalid username'})
     }
 
     const snapshot = await agenda
@@ -76,7 +97,7 @@ const getSchedule = async (req, res) =>{
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log('FB ERROR', error);
+    console.log('>>>> getSchedule ERROR', error);
     return res.status(401);
   }
 }

@@ -1,7 +1,7 @@
 import firebaseServer from 'firebase-admin';
 
 // Initialize
-const app = firebaseServer.apps.length
+const admin = firebaseServer.apps.length
   ? firebaseServer.app()
   : firebaseServer.initializeApp({
       credential: firebaseServer.credential.cert({
