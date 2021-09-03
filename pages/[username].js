@@ -5,10 +5,9 @@ import { useFetch } from '@refetty/react';
 import axios from 'axios'
 import { subDays, addDays, format } from 'date-fns';
 
-import { useAuth, Logo, formatDate, TimeBlock } from './../components';
+import { Logo, formatDate, TimeBlock } from './../components';
 import { ChevronLeftIcon, ChevronRightIcon} from '@chakra-ui/icons'
 import {
-  Button,
   Container,
   Box,
   IconButton,
@@ -35,7 +34,6 @@ const Header = ({ children }) => {
 
 export default function Schedule(){
   const router = useRouter();
-  const [auth, { logout }] = useAuth();
   const [when, setWhen] = useState(()=> new Date());
   const [data, { loading, status, error }, fetch] = useFetch(getSchedule, {lazy: true});
 
@@ -43,8 +41,12 @@ export default function Schedule(){
   const addDay = () => setWhen(prevState => addDays(prevState, 1))
   const subDay = () => setWhen(prevState => subDays(prevState, 1))
 
-  useEffect(()=>{
+  const refresh = () => {
     fetch({when, username: router.query.username});
+  }
+
+  useEffect(()=>{
+    refresh()
   },[when, router.query.username]);
 
   // if(error){
@@ -55,7 +57,6 @@ export default function Schedule(){
     <Container>
       <Header>
         <Logo size={175} />
-        <Button onClick={logout}>Sair</Button>
       </Header>
       <Box marginTop={8} display='flex' alignItems='center'>
         <IconButton
@@ -83,7 +84,7 @@ export default function Schedule(){
           />
         )}
         {data?.map(({ time, isBlocked }) => (
-          <TimeBlock key={time} time={time} date={when} disabled={isBlocked} />
+          <TimeBlock key={time} time={time} date={when} disabled={isBlocked} onSucess={refresh} />
         ))}
       </SimpleGrid>
     </Container>
