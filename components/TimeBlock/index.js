@@ -48,7 +48,7 @@ const ModalTimeBlock = ({isOpen, onClose, onComplete, isSubmitting, children}) =
   </Modal>
 )
   
-export const TimeBlock = ({ time, date }) => {
+export const TimeBlock = ({ time, date, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen((prevState) => !prevState);
 
@@ -81,42 +81,45 @@ export const TimeBlock = ({ time, date }) => {
   });
 
   return (
-    <Button padding={8} bg='blue.500' color='white' onClick={toggle}>
+    <Button padding={8} bg='blue.500' color='white' onClick={toggle} disabled={disabled}>
       {time}
 
-      <ModalTimeBlock
-        isOpen={isOpen}
-        onClose={toggle}
-        onComplete={handleSubmit}
-        isSubmitting={isSubmitting}
-      >
-        <>
-          <Input
-            label='Nome:'
-            name='name'
-            touched={touched.name}
-            errors={errors.name}
-            value={values.name}
-            placeholder='Digite seu nome'
-            onChange={handleChange}
-            onBlur={handleBlur}
-            size='lg'
-            disable={isSubmitting}
-          />
-          <Input
-            label='Telefone:'
-            name='phone'
-            touched={touched.name}
-            errors={errors.name}
-            value={values.phone}
-            placeholder='(99) 9 9999-9999'
-            onChange={handleChange}
-            onBlur={handleBlur}
-            size='lg'
-            disable={isSubmitting}
-          />
-        </>
-      </ModalTimeBlock>
+      {!disabled && (
+        <ModalTimeBlock
+          isOpen={isOpen}
+          onClose={toggle}
+          onComplete={handleSubmit}
+          isSubmitting={isSubmitting}
+        >
+          <>
+            <Input
+              label='Nome:'
+              name='name'
+              touched={touched.name}
+              errors={errors.name}
+              value={values.name}
+              placeholder='Digite seu nome'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              size='lg'
+              disable={isSubmitting}
+            />
+            <Input
+              label='Telefone:'
+              name='phone'
+              mask={['(99) 9999-9999', '(99) 9 9999-9999']}
+              touched={touched.name}
+              errors={errors.name}
+              value={values.phone}
+              placeholder='(99) 9 9999-9999'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              size='lg'
+              disable={isSubmitting}
+            />
+          </>
+        </ModalTimeBlock>
+      )}
     </Button>
   );
 };

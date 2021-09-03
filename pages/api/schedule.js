@@ -10,12 +10,12 @@ const startAt = new Date(2021, 1, 1, 8, 0); // das 8h
 const endAt = new Date(2021, 1, 1, 17, 0); // até 17h
 const totalHours = differenceInHours(endAt, startAt);
 
-const timeBlocks = []
+const timeBlocksList = []
 
 // Cria a lista de horários
 for(let blockIndex = 0; blockIndex <= totalHours; blockIndex++){
   const time = format(addHours(startAt, blockIndex), 'HH:mm')
-  timeBlocks.push(time);
+  timeBlocksList.push(time);
 }
 
 // Recupera o valor de profiles do usuário
@@ -23,6 +23,10 @@ const getUserId = async (username) => {
   const profileDoc = await profile
     .where('username', '==', username)
     .get();
+
+  if(!profileDoc.docs.length){
+    return false;
+  }
 
   const { userId } = profileDoc.docs[0].data();
   return userId;
@@ -50,24 +54,28 @@ const setSchedule = async (req, res) =>{
   return res.status(200).json(block);
 }
 
-const getSchedule = (req, res) =>{
- try {
-    // const username = req.query.username;
-    
-    // const profileDoc = await profile
-    //   .where('username', '==', username)
-    //   .get();
+const getSchedule = async (req, res) =>{
+  try {
+    const userId = await getUserId(req.query.username);
 
-    
-    // const snapshot = await agenda
-    //   .where('userId', '==', profileDoc.userId)
-    //   .where('when', '==', req.query.when)
-    //   .get();
+    if (!userId){
+      return res.status(404).json({message: 'Invalid username'})
+    }
 
-    return res.status(200).json(timeBlocks);
+    const snapshot = await agenda
+      .where('userId', '==', userId)
+      .where('date', '==', req.query.date)
+      .get();
 
-  } 
-  catch (error) {
+    const docs = snapshot.docs.map((doc) => doc.data());
+
+    const result = timeBlocksList.map((time) => ({
+      time,
+      isBlocked: !!docs.find((doc) => doc.time === time), // cast para boolean
+    }));
+
+    return res.status(200).json(result);
+  } catch (error) {
     console.log('FB ERROR', error);
     return res.status(401);
   }

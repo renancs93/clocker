@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useFetch } from '@refetty/react';
 import axios from 'axios'
-import { subDays, addDays } from 'date-fns';
+import { subDays, addDays, format } from 'date-fns';
 
 import { useAuth, Logo, formatDate, TimeBlock } from './../components';
 import { ChevronLeftIcon, ChevronRightIcon} from '@chakra-ui/icons'
@@ -16,14 +16,14 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 
-const getSchedule = async (when) =>
-  axios({
-    method: 'GET',
-    url: '/api/schedule',
-    params: {
-      when: { when, username: window.location.pathname },
-    },
-  });
+const getSchedule = async ({when, username}) => axios({
+  method: 'GET',
+  url: '/api/schedule',
+  params: {
+    username: username,
+    date: format(when, 'yyyy-MM-dd'),
+  },
+});
 
 const Header = ({ children }) => {
   return(
@@ -36,7 +36,6 @@ const Header = ({ children }) => {
 export default function Schedule(){
   const router = useRouter();
   const [auth, { logout }] = useAuth();
-
   const [when, setWhen] = useState(()=> new Date());
   const [data, { loading, status, error }, fetch] = useFetch(getSchedule, {lazy: true});
 
@@ -45,8 +44,12 @@ export default function Schedule(){
   const subDay = () => setWhen(prevState => subDays(prevState, 1))
 
   useEffect(()=>{
-    fetch(getSchedule);
-  },[when]);
+    fetch({when, username: router.query.username});
+  },[when, router.query.username]);
+
+  // if(error){
+  //   redirect(404)
+  // }
 
   return (
     <Container>
@@ -55,15 +58,34 @@ export default function Schedule(){
         <Button onClick={logout}>Sair</Button>
       </Header>
       <Box marginTop={8} display='flex' alignItems='center'>
-        <IconButton icon={<ChevronLeftIcon />} bg='transparent' onClick={subDay} />
-        <Box flex={1} textAlign='center'>{formatDate(when, 'PPPP')}</Box>
-        <IconButton icon={<ChevronRightIcon />} bg='transparent' onClick={addDay} />
+        <IconButton
+          icon={<ChevronLeftIcon />}
+          bg='transparent'
+          onClick={subDay}
+        />
+        <Box flex={1} textAlign='center'>
+          {formatDate(when, 'PPPP')}
+        </Box>
+        <IconButton
+          icon={<ChevronRightIcon />}
+          bg='transparent'
+          onClick={addDay}
+        />
       </Box>
       <SimpleGrid p={4} columns={2} spacing={4}>
-        { loading && <Spinner thickness="4px" speed="0.65s" emptyColor="gray.00" color="blue.500" size="xl" /> }
-        { data?.map(time => <TimeBlock key={time} time={time} date={when} />) }
+        {loading && (
+          <Spinner 
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.00'
+            color='blue.500'
+            size='xl'
+          />
+        )}
+        {data?.map(({ time, isBlocked }) => (
+          <TimeBlock key={time} time={time} date={when} disabled={isBlocked} />
+        ))}
       </SimpleGrid>
-
     </Container>
   );
 };
